@@ -1,0 +1,458 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-06-11T00:00:00.000Z",
+  "__export_source": "koinsight.manual",
+  "resources": [
+    {
+      "_id": "wrk_koinsight",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "KoInsight API",
+      "description": "Local test collection for the KoInsight backend. Default targets the standalone server dev port (3001). Change `port` to 3000 if you run the whole stack via `npm run dev`.",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_koinsight",
+      "name": "Base Environment",
+      "data": {
+        "host": "localhost",
+        "port": "3001",
+        "base_url": "http://{{ _.host }}:{{ _.port }}",
+        "username": "reader1",
+        "password": "password123",
+        "book_md5": "8910339ab792480534bd96120b4b3c14",
+        "book_id": "1"
+      },
+      "dataPropertyOrder": {
+        "&": ["host", "port", "base_url", "username", "password", "book_md5", "book_id"]
+      },
+      "metaSortKey": 1
+    },
+
+    {
+      "_id": "fld_goals",
+      "_type": "request_group",
+      "parentId": "wrk_koinsight",
+      "name": "Goals (new feature)",
+      "description": "Endpoints for the reading-goals feature you are building. These will 404 until the goals-router is implemented and mounted at /api/goals in app.ts.",
+      "metaSortKey": -200
+    },
+    {
+      "_id": "req_goals_get_all",
+      "_type": "request",
+      "parentId": "fld_goals",
+      "name": "Get goals + progress",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/goals",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -200
+    },
+    {
+      "_id": "req_goals_put_daily",
+      "_type": "request",
+      "parentId": "fld_goals",
+      "name": "Set daily minutes goal",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/api/goals/daily_minutes",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"target\": 30\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -190
+    },
+    {
+      "_id": "req_goals_put_yearly",
+      "_type": "request",
+      "parentId": "fld_goals",
+      "name": "Set yearly books goal",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/api/goals/yearly_books",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"target\": 24\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -180
+    },
+    {
+      "_id": "req_goals_put_invalid",
+      "_type": "request",
+      "parentId": "fld_goals",
+      "name": "Set goal - invalid (Zod 400 check)",
+      "description": "Negative target / unknown type should be rejected by Zod validation.",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/api/goals/daily_minutes",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"target\": -5\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -170
+    },
+
+    {
+      "_id": "fld_stats",
+      "_type": "request_group",
+      "parentId": "wrk_koinsight",
+      "name": "Stats",
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_stats_all",
+      "_type": "request",
+      "parentId": "fld_stats",
+      "name": "Get all stats",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/stats",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_stats_book",
+      "_type": "request",
+      "parentId": "fld_stats",
+      "name": "Get book stats (by md5)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/stats/{{ _.book_md5 }}",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -90
+    },
+
+    {
+      "_id": "fld_books",
+      "_type": "request_group",
+      "parentId": "wrk_koinsight",
+      "name": "Books",
+      "metaSortKey": -50
+    },
+    {
+      "_id": "req_books_all",
+      "_type": "request",
+      "parentId": "fld_books",
+      "name": "Get all books",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/books",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_books_one",
+      "_type": "request",
+      "parentId": "fld_books",
+      "name": "Get book",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/books/{{ _.book_id }}/",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -90
+    },
+    {
+      "_id": "req_books_cover",
+      "_type": "request",
+      "parentId": "fld_books",
+      "name": "Get book cover",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/books/{{ _.book_id }}/cover",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -80
+    },
+    {
+      "_id": "req_books_ref_pages",
+      "_type": "request",
+      "parentId": "fld_books",
+      "name": "Set reference pages",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/api/books/{{ _.book_id }}/reference_pages",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"reference_pages\": 300\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -70
+    },
+    {
+      "_id": "req_books_hide",
+      "_type": "request",
+      "parentId": "fld_books",
+      "name": "Hide book",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/api/books/{{ _.book_id }}/hide",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"hidden\": true\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -60
+    },
+    {
+      "_id": "req_books_show",
+      "_type": "request",
+      "parentId": "fld_books",
+      "name": "Show book",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/api/books/{{ _.book_id }}/hide",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"hidden\": false\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -50
+    },
+    {
+      "_id": "req_books_add_genre",
+      "_type": "request",
+      "parentId": "fld_books",
+      "name": "Add genre",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/books/{{ _.book_id }}/genres",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"genreName\": \"fantasy\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -40
+    },
+    {
+      "_id": "req_books_delete",
+      "_type": "request",
+      "parentId": "fld_books",
+      "name": "Delete book",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/api/books/{{ _.book_id }}/",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -30
+    },
+
+    {
+      "_id": "fld_devices",
+      "_type": "request_group",
+      "parentId": "wrk_koinsight",
+      "name": "Devices",
+      "metaSortKey": 0
+    },
+    {
+      "_id": "req_devices_all",
+      "_type": "request",
+      "parentId": "fld_devices",
+      "name": "Get all devices",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/devices",
+      "body": {},
+      "headers": [],
+      "metaSortKey": 0
+    },
+
+    {
+      "_id": "fld_kosync",
+      "_type": "request_group",
+      "parentId": "wrk_koinsight",
+      "name": "KoSync",
+      "description": "KoSync protocol routes are mounted at root (not /api). Auth uses x-auth-user / x-auth-key headers.",
+      "metaSortKey": 50
+    },
+    {
+      "_id": "req_kosync_register",
+      "_type": "request",
+      "parentId": "fld_kosync",
+      "name": "Register user",
+      "method": "POST",
+      "url": "{{ _.base_url }}/users/create",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"username\": \"{{ _.username }}\",\n  \"password\": \"{{ _.password }}\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": 10
+    },
+    {
+      "_id": "req_kosync_auth",
+      "_type": "request",
+      "parentId": "fld_kosync",
+      "name": "Authenticate",
+      "method": "GET",
+      "url": "{{ _.base_url }}/users/auth",
+      "body": {},
+      "headers": [
+        { "name": "x-auth-user", "value": "{{ _.username }}" },
+        { "name": "x-auth-key", "value": "{{ _.password }}" }
+      ],
+      "metaSortKey": 20
+    },
+    {
+      "_id": "req_kosync_put_progress",
+      "_type": "request",
+      "parentId": "fld_kosync",
+      "name": "Put progress",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/syncs/progress",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"document\": \"d1\",\n  \"progress\": \"40%\",\n  \"percentage\": 30,\n  \"device\": \"dev1\",\n  \"device_id\": \"dev1-id\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "x-auth-user", "value": "{{ _.username }}" },
+        { "name": "x-auth-key", "value": "{{ _.password }}" }
+      ],
+      "metaSortKey": 30
+    },
+    {
+      "_id": "req_kosync_get_progress",
+      "_type": "request",
+      "parentId": "fld_kosync",
+      "name": "Get all progress",
+      "method": "GET",
+      "url": "{{ _.base_url }}/syncs/progress",
+      "body": {},
+      "headers": [
+        { "name": "x-auth-user", "value": "{{ _.username }}" },
+        { "name": "x-auth-key", "value": "{{ _.password }}" }
+      ],
+      "metaSortKey": 40
+    },
+
+    {
+      "_id": "fld_ai",
+      "_type": "request_group",
+      "parentId": "wrk_koinsight",
+      "name": "AI",
+      "metaSortKey": 100
+    },
+    {
+      "_id": "req_ai_insights",
+      "_type": "request",
+      "parentId": "fld_ai",
+      "name": "Book insights",
+      "description": "Mounted at /api/ai. Requires an OpenAI key configured server-side.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/ai/book-insights",
+      "parameters": [
+        { "name": "title", "value": "Mistborn" },
+        { "name": "author", "value": "Brandon Sanderson" }
+      ],
+      "body": {},
+      "headers": [],
+      "metaSortKey": 100
+    },
+
+    {
+      "_id": "fld_openlibrary",
+      "_type": "request_group",
+      "parentId": "wrk_koinsight",
+      "name": "Open Library",
+      "metaSortKey": 150
+    },
+    {
+      "_id": "req_ol_list_covers",
+      "_type": "request",
+      "parentId": "fld_openlibrary",
+      "name": "List covers",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/open-library/list-covers",
+      "parameters": [
+        { "name": "searchTerm", "value": "Mistborn" },
+        { "name": "limit", "value": "5" }
+      ],
+      "body": {},
+      "headers": [],
+      "metaSortKey": 150
+    },
+    {
+      "_id": "req_ol_cover",
+      "_type": "request",
+      "parentId": "fld_openlibrary",
+      "name": "Fetch + save cover",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/open-library/cover",
+      "parameters": [
+        { "name": "coverId", "value": "12345" },
+        { "name": "bookId", "value": "{{ _.book_id }}" },
+        { "name": "size", "value": "M" }
+      ],
+      "body": {},
+      "headers": [],
+      "metaSortKey": 160
+    },
+
+    {
+      "_id": "fld_koplugin",
+      "_type": "request_group",
+      "parentId": "wrk_koinsight",
+      "name": "KoPlugin",
+      "metaSortKey": 200
+    },
+    {
+      "_id": "req_koplugin_health",
+      "_type": "request",
+      "parentId": "fld_koplugin",
+      "name": "Health",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/plugin/health",
+      "body": {},
+      "headers": [],
+      "metaSortKey": 200
+    },
+    {
+      "_id": "req_koplugin_download",
+      "_type": "request",
+      "parentId": "fld_koplugin",
+      "name": "Download plugin",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/plugin/download",
+      "body": {},
+      "headers": [],
+      "metaSortKey": 210
+    },
+
+    {
+      "_id": "fld_upload",
+      "_type": "request_group",
+      "parentId": "wrk_koinsight",
+      "name": "Upload",
+      "metaSortKey": 250
+    },
+    {
+      "_id": "req_upload_db",
+      "_type": "request",
+      "parentId": "fld_upload",
+      "name": "Upload statistics DB",
+      "description": "Multipart upload of a KOReader statistics.sqlite3. Select a file for the `file` form field before sending.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/upload",
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          { "name": "file", "type": "file", "fileName": "" }
+        ]
+      },
+      "headers": [],
+      "metaSortKey": 250
+    }
+  ]
+}
