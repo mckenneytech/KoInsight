@@ -13,6 +13,7 @@ import { kosyncRouter } from './kosync/kosync-router';
 import { openLibraryRouter } from './open-library/open-library-router';
 import { statsRouter } from './stats/stats-router';
 import { uploadRouter } from './upload/upload-router';
+import { goalsRouter } from './goals/goals-router';
 
 async function setupServer() {
   const app = express();
@@ -34,6 +35,7 @@ async function setupServer() {
   app.use('/api/upload', uploadRouter);
   app.use('/api/open-library', openLibraryRouter);
   app.use('/api/ai', openAiRouter);
+  app.use('/api/goals', goalsRouter);
 
   // Serve react app
   app.use(express.static(appConfig.webBuildPath));
