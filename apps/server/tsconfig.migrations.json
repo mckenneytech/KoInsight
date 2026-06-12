@@ -9,7 +9,7 @@
     "declaration": false,
     "noEmit": false,
     "incremental": true,
-    "isolatedModules": true,
+    "isolatedModules": true
   },
   "include": ["src/db/migrations/**/*.ts"]
 }

@@ -24,9 +24,7 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('user').del();
 
   // Create test users
-  const users = await Promise.all(
-    TEST_USERS.map((userData) => createUser(db, userData))
-  );
+  const users = await Promise.all(TEST_USERS.map((userData) => createUser(db, userData)));
 
   SEEDED_USERS = users;
 
@@ -36,9 +34,7 @@ export async function seed(knex: Knex): Promise<void> {
   SEEDED_USERS.forEach((user) => {
     // Each user has progress for 3-7 random books
     const numBooks = Math.floor(Math.random() * 5) + 3;
-    const userBooks = [...SEEDED_BOOKS]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, numBooks);
+    const userBooks = [...SEEDED_BOOKS].sort(() => Math.random() - 0.5).slice(0, numBooks);
 
     userBooks.forEach((book) => {
       // Use a random device for each book
@@ -64,7 +60,9 @@ export async function seed(knex: Knex): Promise<void> {
 
   SEEDED_PROGRESS = await Promise.all(progressPromises);
 
-  console.log(`✓ Seeded ${SEEDED_USERS.length} users with ${SEEDED_PROGRESS.length} progress records`);
+  console.log(
+    `✓ Seeded ${SEEDED_USERS.length} users with ${SEEDED_PROGRESS.length} progress records`
+  );
   console.log('  Test user credentials:');
   TEST_USERS.forEach((user) => {
     console.log(`    - Username: ${user.username}, Password: ${user.password}`);

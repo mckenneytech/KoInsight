@@ -36,8 +36,7 @@ export function UploadForm(): JSX.Element {
         });
         setMessage('');
         close();
-      }
-      else if (response.status === 413) {
+      } else if (response.status === 413) {
         const body = await response.json();
         setMessage(body?.error);
       } else {
