@@ -32,7 +32,7 @@ export class GoalsService {
     return this.numberOfBooksReadThisYear(books);
   }
 
-  static async getAllWithProgress(): Promise<GoalWithProgress[]> {
+  static async getCurrentWithProgress(): Promise<GoalWithProgress[]> {
     const goals = await GoalsRepository.getCurrentGoals();
     for (const goal of goals) {
       if (goal.type === 'daily_minutes') {
@@ -44,5 +44,10 @@ export class GoalsService {
       }
     }
     return goals;
+  }
+
+  static async getAchievements(): Promise<GoalWithProgress[]> {
+    const achievements = await GoalsRepository.getAchievements();
+    return achievements;
   }
 }

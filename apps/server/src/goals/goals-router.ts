@@ -1,12 +1,17 @@
 import { Request, Response, Router } from 'express';
-import { GetGoalsResponse } from '@koinsight/common/types';
 import { GoalsRepository } from './goals-repository';
 import { GoalsService } from './goals-service';
 
 const router = Router();
 
-router.get('/', async (_: Request, res: Response) => {
-  const goals = await GoalsService.getAllWithProgress();
+router.get('/current', async (_: Request, res: Response) => {
+  const goals = await GoalsService.getCurrentWithProgress();
+
+  res.status(200).json(goals);
+});
+
+router.get('/achievements', async (_: Request, res: Response) => {
+  const goals = await GoalsService.getAchievements();
 
   res.status(200).json(goals);
 });
