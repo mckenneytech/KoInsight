@@ -1,6 +1,6 @@
 export type GoalType = 'daily_minutes' | 'yearly_books';
 
-export type Goal = {
+export type GoalWithProgress = {
   id: number;
   type: GoalType;
   target: number;
@@ -11,5 +11,5 @@ export type Goal = {
 };
 
 export type GetGoalsResponse = {
-  currentGoals: Goal[];
+  currentGoals: GoalWithProgress[];
 };

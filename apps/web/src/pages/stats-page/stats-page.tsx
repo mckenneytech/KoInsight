@@ -19,6 +19,7 @@ import { ReadingCalendar } from '../../components/statistics/reading-calendar';
 import { Statistics } from '../../components/statistics/statistics';
 import { formatSecondsToHumanReadable } from '../../utils/dates';
 import { WeekStats } from './week-stats';
+import { Goals } from './goals';
 
 export function StatsPage(): JSX.Element {
   const colorScheme = useComputedColorScheme();
@@ -104,6 +105,10 @@ export function StatsPage(): JSX.Element {
           ]}
         />
       </Box>
+      <Title mt="xl" mb={4} order={3}>
+        Goals
+      </Title>
+      <Goals />
       <Title mb="xl" order={3}>
         Reading history
       </Title>
