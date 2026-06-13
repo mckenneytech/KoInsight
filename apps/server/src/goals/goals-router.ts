@@ -16,6 +16,9 @@ router.get('/', async (_: Request, res: Response) => {
 
 router.put('/daily_minutes', async (req: Request, res: Response) => {
   const goal = req.body.target;
+  if (goal < 0) {
+    return res.status(400).json({ message: 'Invalid goal value' });
+  }
 
   try {
     await GoalsRepository.upsert('daily_minutes', goal);
@@ -27,6 +30,9 @@ router.put('/daily_minutes', async (req: Request, res: Response) => {
 
 router.put('/yearly_books', async (req: Request, res: Response) => {
   const goal = req.body.target;
+  if (goal < 0) {
+    return res.status(400).json({ message: 'Invalid goal value' });
+  }
 
   try {
     await GoalsRepository.upsert('yearly_books', goal);

@@ -6,6 +6,8 @@ export type Goal = {
   target: number;
   progress: number;
   achieved: boolean;
+  created_at: Date;
+  updated_at: Date;
 };
 
 export type GetGoalsResponse = {
