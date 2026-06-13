@@ -7,6 +7,10 @@ export class GoalsRepository {
     return db<GoalWithProgress>('goal').select('*');
   }
 
+  static async getAchievements(): Promise<GoalWithProgress[]> {
+    return db<GoalWithProgress>('goal_achievement').select('*');
+  }
+
   static async upsert(type: GoalType, target: number) {
     return db('goal').insert({ type, target }).onConflict('type').merge(['target', 'updated_at']);
   }
