@@ -7,11 +7,8 @@ const router = Router();
 
 router.get('/', async (_: Request, res: Response) => {
   const goals = await GoalsService.getAllWithProgress();
-  const response: GetGoalsResponse = {
-    currentGoals: goals,
-  };
 
-  res.status(200).json(response);
+  res.status(200).json(goals);
 });
 
 router.put('/daily_minutes', async (req: Request, res: Response) => {

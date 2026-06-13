@@ -1,5 +1,5 @@
 import { GoalsRepository } from './goals-repository';
-import { BookWithData, Goal, PageStat } from '@koinsight/common/types';
+import { BookWithData, GoalWithProgress, PageStat } from '@koinsight/common/types';
 import { StatsRepository } from '../stats/stats-repository';
 import { isSameDay, isSameYear } from 'date-fns';
 import { BooksRepository } from '../books/books-repository';
@@ -32,8 +32,8 @@ export class GoalsService {
     return this.numberOfBooksReadThisYear(books);
   }
 
-  static async getAllWithProgress(): Promise<Goal[]> {
-    const goals = await GoalsRepository.getAll();
+  static async getAllWithProgress(): Promise<GoalWithProgress[]> {
+    const goals = await GoalsRepository.getCurrentGoals();
     for (const goal of goals) {
       if (goal.type === 'daily_minutes') {
         goal.progress = await GoalsService.calculateDailyGoalProgress();
