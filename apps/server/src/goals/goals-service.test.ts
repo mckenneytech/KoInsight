@@ -6,7 +6,7 @@ import { createBookDevice } from '../db/factories/book-device-factory';
 import { createDevice } from '../db/factories/device-factory';
 import { createPageStat } from '../db/factories/page-stat-factory';
 import { createGoal } from '../db/factories/goal-factory';
-import { GoalsService } from './goals-service';
+import { COMPLETION_THRESHOLD, GoalsService } from './goals-service';
 
 /** StatsRepository.getAll() treats stored start_time as seconds, so seed it in seconds. */
 function secondsAtNoon(year: number, month: number, day: number): number {
@@ -184,8 +184,16 @@ describe(GoalsService.minutesReadToday, () => {
 
 describe(GoalsService.isCompleted, () => {
   it('is completed once the read ratio reaches the threshold', () => {
-    expect(GoalsService.isCompleted(completableBook({ unique_read_pages: 95 }))).toBe(true);
-    expect(GoalsService.isCompleted(completableBook({ unique_read_pages: 94 }))).toBe(false);
+    const total = 100;
+    const atThreshold = Math.ceil(COMPLETION_THRESHOLD * total);
+    expect(
+      GoalsService.isCompleted(completableBook({ total_pages: total, unique_read_pages: atThreshold }))
+    ).toBe(true);
+    expect(
+      GoalsService.isCompleted(
+        completableBook({ total_pages: total, unique_read_pages: atThreshold - 1 })
+      )
+    ).toBe(false);
   });
 
   it('is never completed without a known page count', () => {
