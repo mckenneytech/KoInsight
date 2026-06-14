@@ -9,6 +9,7 @@ import {
 } from '@koinsight/common/types';
 import Database, { Database as DatabaseType } from 'better-sqlite3';
 import { AnnotationsRepository } from '../annotations/annotations-repository';
+import { GoalsService } from '../goals/goals-service';
 import { db } from '../knex';
 
 export class UploadService {
@@ -38,13 +39,13 @@ export class UploadService {
     return { newBooks, newPageStats };
   }
 
-  static uploadStatisticData(
+  static async uploadStatisticData(
     booksToImport: KoReaderBook[],
     newPageStats: PageStat[],
     annotationsByBook?: Record<string, KoReaderAnnotation[]>,
     deviceIdOverride?: string // For annotation sync path without stats
   ) {
-    return db.transaction(async (trx) => {
+    await db.transaction(async (trx) => {
       // Normalize: the plugin sends {} (empty Lua table → JSON object) on the
       // annotation-only path, not []. Guard all array operations against this,
       // and drop clearly invalid page stat rows.
@@ -162,6 +163,16 @@ export class UploadService {
 
       await trx.commit();
     });
+
+    // A sync is the "user event" that triggers goal evaluation. Run it after the
+    // import commits so the new page stats are visible, and outside the import
+    // transaction so a recording failure can't roll back the actual reading data —
+    // achievements are derived and self-heal on the next sync.
+    try {
+      await GoalsService.recordPreviousAchievements();
+    } catch (err) {
+      console.error('Failed to record goal achievements after import:', err);
+    }
   }
 
   /**

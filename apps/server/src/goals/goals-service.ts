@@ -1,5 +1,5 @@
 import { GoalsRepository } from './goals-repository';
-import { BookWithData, GoalWithProgress, PageStat } from '@koinsight/common/types';
+import { BookWithData, GoalAchievement, GoalWithProgress, PageStat } from '@koinsight/common/types';
 import { StatsRepository } from '../stats/stats-repository';
 import { format, getYear, startOfDay } from 'date-fns';
 import { BooksRepository } from '../books/books-repository';
@@ -65,8 +65,48 @@ export class GoalsService {
     return goals;
   }
 
-  static async getAchievements(): Promise<GoalWithProgress[]> {
-    const achievements = await GoalsRepository.getAchievements();
+  static async getAchievements(): Promise<GoalAchievement[]> {
+    return GoalsRepository.getAchievements();
+  }
+
+  static async recordPreviousAchievements(): Promise<Omit<GoalAchievement, 'id'>[]> {
+    const goals = await GoalsRepository.getCurrentGoals();
+    const dailyGoal = goals.find((g) => g.type === 'daily_minutes');
+    const yearlyGoal = goals.find((g) => g.type === 'yearly_books');
+
+    const achievements: Omit<GoalAchievement, 'id'>[] = [];
+
+    if (dailyGoal) {
+      const stats = await StatsRepository.getAll();
+      for (const [day, minutes] of this.minutesPerDay(stats)) {
+        if (minutes >= dailyGoal.target) {
+          achievements.push({
+            type: 'daily_minutes',
+            period: day,
+            target: dailyGoal.target,
+            value: minutes,
+            achieved_at: new Date(`${day}T23:59:59`),
+          });
+        }
+      }
+    }
+
+    if (yearlyGoal) {
+      const books = await BooksRepository.getAllWithData();
+      for (const [year, count] of this.booksCompletedPerYear(books)) {
+        if (count >= yearlyGoal.target) {
+          achievements.push({
+            type: 'yearly_books',
+            period: String(year),
+            target: yearlyGoal.target,
+            value: count,
+            achieved_at: new Date(`${year}-12-31T23:59:59`),
+          });
+        }
+      }
+    }
+
+    await GoalsRepository.insertAchievements(achievements);
     return achievements;
   }
 }
