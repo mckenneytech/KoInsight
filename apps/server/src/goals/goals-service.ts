@@ -4,7 +4,7 @@ import { StatsRepository } from '../stats/stats-repository';
 import { format, getYear, startOfDay } from 'date-fns';
 import { BooksRepository } from '../books/books-repository';
 
-export const COMPLETION_THRESHOLD = 0.95;
+export const COMPLETION_THRESHOLD = 0.94;
 
 export class GoalsService {
   static minutesPerDay(stats: PageStat[]): Map<string, number> {
