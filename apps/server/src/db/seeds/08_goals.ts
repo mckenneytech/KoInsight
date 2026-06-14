@@ -1,55 +1,74 @@
-import { GoalAchievement, Goal } from '@koinsight/common/types';
+import { Goal, GoalAchievement, PageStat, BookWithData } from '@koinsight/common/types';
 import { db } from '../../knex';
 import { Knex } from 'knex';
+import { format, startOfDay, getYear } from 'date-fns';
 import { createGoal } from '../factories/goal-factory';
-import { createGoalAchievement } from '../factories/goal-achievement-factory';
+import { StatsRepository } from '../../stats/stats-repository';
+import { BooksRepository } from '../../books/books-repository';
+
+const DAILY_TARGET = 60;
+const YEARLY_TARGET = 10;
+const COMPLETION_THRESHOLD = 0.95;
 
 const SEED_GOALS: Partial<Goal>[] = [
-  {
-    id: 1,
-    type: 'daily_minutes',
-    target: 60,
-  },
-  {
-    id: 2,
-    type: 'yearly_books',
-    target: 10,
-  },
-];
-
-const SEED_GOAL_ACHIEVEMENTS: Partial<GoalAchievement>[] = [
-  {
-    id: 1,
-    type: 'daily_minutes',
-    period: new Date().toDateString(),
-    target: 60,
-    value: 65,
-    achieved_at: new Date(),
-  },
-  {
-    id: 2,
-    type: 'yearly_books',
-    period: new Date().getFullYear().toString(),
-    target: 10,
-    value: 10,
-    achieved_at: new Date(),
-  },
+  { type: 'daily_minutes', target: DAILY_TARGET },
+  { type: 'yearly_books', target: YEARLY_TARGET },
 ];
 
 export let SEEDED_GOALS: Goal[] = [];
-export let SEEDED_ACHIEVEMENTS: GoalAchievement[] = [];
+
+// One row per day whose total minutes met the daily target.
+function dailyAchievements(stats: PageStat[]): Omit<GoalAchievement, 'id'>[] {
+  const secondsPerDay = new Map<string, number>(); // start_time is ms, duration is seconds
+  for (const s of stats) {
+    const day = format(startOfDay(s.start_time), 'yyyy-MM-dd');
+    secondsPerDay.set(day, (secondsPerDay.get(day) ?? 0) + s.duration);
+  }
+
+  return [...secondsPerDay.entries()]
+    .map(([day, seconds]) => ({ day, minutes: Math.round(seconds / 60) }))
+    .filter(({ minutes }) => minutes >= DAILY_TARGET)
+    .map(({ day, minutes }) => ({
+      type: 'daily_minutes' as const,
+      period: day,
+      target: DAILY_TARGET,
+      value: minutes,
+      achieved_at: new Date(`${day}T23:59:59`),
+    }));
+}
+
+// One row per year whose completed-book count met the yearly target.
+function yearlyAchievements(books: BookWithData[]): Omit<GoalAchievement, 'id'>[] {
+  const booksPerYear = new Map<number, number>();
+  for (const book of books) {
+    if (!book.total_pages) continue;
+    if (book.unique_read_pages / book.total_pages < COMPLETION_THRESHOLD) continue;
+    const year = getYear(book.last_open * 1000); // last_open is seconds
+    booksPerYear.set(year, (booksPerYear.get(year) ?? 0) + 1);
+  }
+
+  return [...booksPerYear.entries()]
+    .filter(([, count]) => count >= YEARLY_TARGET)
+    .map(([year, count]) => ({
+      type: 'yearly_books' as const,
+      period: String(year),
+      target: YEARLY_TARGET,
+      value: count,
+      achieved_at: new Date(`${year}-12-31T23:59:59`),
+    }));
+}
 
 export async function seed(knex: Knex): Promise<void> {
   await knex('goal').del();
   await knex('goal_achievement').del();
 
-  const goals = await Promise.all(SEED_GOALS.map((goal) => createGoal(db, goal)));
-  SEEDED_GOALS = goals as Goal[];
-  console.log(`✓ Seeded ${SEEDED_GOALS.length} goals`);
+  SEEDED_GOALS = (await Promise.all(SEED_GOALS.map((g) => createGoal(db, g)))) as Goal[];
 
-  const goal_achievements = await Promise.all(
-    SEED_GOAL_ACHIEVEMENTS.map((achievement) => createGoalAchievement(db, achievement))
-  );
-  SEEDED_ACHIEVEMENTS = goal_achievements as GoalAchievement[];
-  console.log(`✓ Seeded ${SEEDED_ACHIEVEMENTS.length} goal achievements`);
+  const stats = await StatsRepository.getAll();
+  const books = await BooksRepository.getAllWithData();
+
+  const achievements = [...dailyAchievements(stats), ...yearlyAchievements(books)];
+  if (achievements.length) await knex('goal_achievement').insert(achievements);
+
+  console.log(`✓ Seeded ${SEEDED_GOALS.length} goals and ${achievements.length} achievements`);
 }
