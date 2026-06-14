@@ -16,6 +16,15 @@ router.get('/achievements', async (_: Request, res: Response) => {
   res.status(200).json(goals);
 });
 
+router.post('/refresh', async (_: Request, res: Response) => {
+  try {
+    await GoalsService.recordPreviousAchievements();
+    res.status(200).json({ message: 'Goals refreshed' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error refreshing goals' });
+  }
+});
+
 router.put('/daily_minutes', async (req: Request, res: Response) => {
   const goal = req.body.target;
   if (goal < 0) {

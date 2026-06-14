@@ -4,6 +4,10 @@ import request from 'supertest';
 import { Goal } from '@koinsight/common/types';
 import { db } from '../knex';
 import { createGoal } from '../db/factories/goal-factory';
+import { createBook } from '../db/factories/book-factory';
+import { createBookDevice } from '../db/factories/book-device-factory';
+import { createDevice } from '../db/factories/device-factory';
+import { createPageStat } from '../db/factories/page-stat-factory';
 import { goalsRouter } from './goals-router';
 
 const app = express();
@@ -57,6 +61,27 @@ describe('goalsRouter', () => {
       expect(response.body[0]).toEqual(
         expect.objectContaining({ type: 'daily_minutes', period: '2026-06-10', value: 45 })
       );
+    });
+  });
+
+  describe('POST /goals/refresh', () => {
+    it('records achievements for days that meet the goal', async () => {
+      const device = await createDevice(db);
+      const book = await createBook(db, { soft_deleted: false });
+      const bookDevice = await createBookDevice(db, book, device, { pages: 100 });
+      await createPageStat(db, book, bookDevice, device, {
+        page: 1,
+        start_time: new Date(2026, 5, 10, 12).getTime() / 1000,
+        duration: 30 * 60,
+      });
+      await createGoal(db, { type: 'daily_minutes', target: 30 });
+
+      const response = await request(app).post('/goals/refresh');
+
+      expect(response.status).toBe(200);
+      const rows = await db('goal_achievement').select('*');
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({ type: 'daily_minutes', period: '2026-06-10' });
     });
   });
 
